@@ -5046,7 +5046,7 @@ GameObject:
   - component: {fileID: 7367186199699140573}
   - component: {fileID: 3963042743707149550}
   m_Layer: 0
-  m_Name: vfx_Projectile
+  m_Name: vfx_FireBallProjectile
   m_TagString: Projectile
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
