@@ -75,18 +75,21 @@ public class SpellWheel : MonoBehaviour
 
         if (isWheelOpen)
         {
-            Time.timeScale = 0f;
+            Time.timeScale = 0.1f; // Slow down time instead of freezing it
+            Time.fixedDeltaTime = 0.01f * Time.timeScale; // Adjust physics timestep for smooth movement
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
         else
         {
-            Time.timeScale = 1f;
+            Time.timeScale = 1f; // Restore normal speed
+            Time.fixedDeltaTime = 0.02f; // Reset physics timestep
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
             ConfirmSelection();
         }
     }
+
 
     void SelectSpell(SpellData spell, GameObject spellIcon)
     {

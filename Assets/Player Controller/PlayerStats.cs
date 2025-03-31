@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class PlayerStats : MonoBehaviour
@@ -13,6 +14,8 @@ public class PlayerStats : MonoBehaviour
 
     [SerializeField] private PlayerHealthbar _healthBar;
 
+    private bool isParrying = false; // Ensure we don't start multiple coroutines
+
     void Start()
     {
         currentHealth = maxHealth;
@@ -25,24 +28,20 @@ public class PlayerStats : MonoBehaviour
     {
         if (currentShield > 0)
         {
-            // If shield is active, reduce shield first
             float shieldDamage = Mathf.Min(damage, currentShield);
             currentShield -= shieldDamage;
-            damage -= shieldDamage;  // Remaining damage after shield is depleted
+            damage -= shieldDamage;
 
             if (damage > 0)
             {
-                // If there's any remaining damage, apply it to health
                 currentHealth -= damage;
             }
         }
         else
         {
-            // If no shield, apply full damage to health
             currentHealth -= damage;
         }
 
-        // Update health and shield bars
         _healthBar.UpdateHealthBar(maxHealth, currentHealth);
         _healthBar.UpdateShieldBar(maxShield, currentShield);
 
@@ -52,18 +51,46 @@ public class PlayerStats : MonoBehaviour
         }
     }
 
-
     public void Parry()
     {
+        Debug.Log("Parry successful! Time.timeScale: " + Time.timeScale);
+
         currentShield += 10f; // Heal 10 shield per parry
         if (currentShield > maxShield) currentShield = maxShield;
         _healthBar.UpdateShieldBar(maxShield, currentShield);
 
-        // Play the parry sound from the public AudioSource
         if (playerAudioSource != null && ParryAudio != null)
         {
-            playerAudioSource.PlayOneShot(ParryAudio);  // Play parry sound
+            playerAudioSource.PlayOneShot(ParryAudio);
         }
+
+        if (!isParrying)
+        {
+            isParrying = true;
+            StartCoroutine(ParrySlowMo());
+        }
+    }
+
+    private IEnumerator ParrySlowMo()
+    {
+        Debug.Log("Parry slow-motion started");
+
+        Time.timeScale = 0.1f;
+        Time.fixedDeltaTime = 0.02f * Time.timeScale;
+        Debug.Log("Time scale set to 0.1");
+
+        yield return new WaitForSecondsRealtime(0.5f);
+
+        Debug.Log("Resetting time scale...");
+        ResetTimeScale();
+    }
+
+    private void ResetTimeScale()
+    {
+        Debug.Log("Time scale reset to normal.");
+        Time.timeScale = 1f;
+        Time.fixedDeltaTime = 0.02f;
+        isParrying = false;
     }
 
     void Die()
