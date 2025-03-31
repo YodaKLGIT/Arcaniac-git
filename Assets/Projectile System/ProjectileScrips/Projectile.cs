@@ -9,7 +9,6 @@ public class Projectile : MonoBehaviour
     private bool collided;
     public float damage = 20f;
     public bool isPlayerProjectile;
-    private static bool isParrying = false;
 
     void OnCollisionEnter(Collision co)
     {
@@ -94,39 +93,5 @@ public class Projectile : MonoBehaviour
             Destroy(otherProjectile.gameObject);
             Destroy(gameObject);
         }
-    }
-
-
-    public void Parry()
-    {
-        Debug.Log("Parry successful! Time.timeScale: " + Time.timeScale);
-        if (!isParrying)
-        {
-            isParrying = true;
-            StartCoroutine(ParrySlowMo());
-        }
-    }
-
-    private IEnumerator ParrySlowMo()
-    {
-        Debug.Log("Parry slow-motion started at Time.timeScale: " + Time.timeScale);
-
-        // Almost freeze time
-        Time.timeScale = 0f;
-        Time.fixedDeltaTime = 0.02f * Time.timeScale;
-        Debug.Log("Time scale set to 0.01");
-
-        yield return new WaitForSecondsRealtime(0.1f);
-
-        Debug.Log("Resetting time scale...");
-        ResetTimeScale();
-    }
-
-    private void ResetTimeScale()
-    {
-        Debug.Log("Resetting time scale to normal.");
-        Time.timeScale = 1f;
-        Time.fixedDeltaTime = 0.02f;
-        isParrying = false;
     }
 }

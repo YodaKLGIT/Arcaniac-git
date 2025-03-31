@@ -53,8 +53,6 @@ public class PlayerStats : MonoBehaviour
 
     public void Parry()
     {
-        Debug.Log("Parry successful! Time.timeScale: " + Time.timeScale);
-
         currentShield += 10f; // Heal 10 shield per parry
         if (currentShield > maxShield) currentShield = maxShield;
         _healthBar.UpdateShieldBar(maxShield, currentShield);
@@ -73,21 +71,17 @@ public class PlayerStats : MonoBehaviour
 
     private IEnumerator ParrySlowMo()
     {
-        Debug.Log("Parry slow-motion started");
 
         Time.timeScale = 0.1f;
         Time.fixedDeltaTime = 0.02f * Time.timeScale;
-        Debug.Log("Time scale set to 0.1");
 
-        yield return new WaitForSecondsRealtime(0.5f);
+        yield return new WaitForSecondsRealtime(0.30f);
 
-        Debug.Log("Resetting time scale...");
         ResetTimeScale();
     }
 
     private void ResetTimeScale()
     {
-        Debug.Log("Time scale reset to normal.");
         Time.timeScale = 1f;
         Time.fixedDeltaTime = 0.02f;
         isParrying = false;

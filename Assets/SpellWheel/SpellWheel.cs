@@ -127,8 +127,6 @@ public class SpellWheel : MonoBehaviour
         }
     }
 
-
-
     void ConfirmSelection()
     {
         if (selectedSpells.Count >= 1) // Ensure at least 1 spell is selected
