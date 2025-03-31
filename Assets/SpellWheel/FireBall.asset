@@ -18,3 +18,4 @@ MonoBehaviour:
   cooldown: 0.5
   projectilePrefab: {fileID: 5795362006662943173, guid: d53ca91276cac2040af6baa13f784b85,
     type: 3}
+  backgroundColor: {r: 1, g: 0.57168794, b: 0, a: 1}

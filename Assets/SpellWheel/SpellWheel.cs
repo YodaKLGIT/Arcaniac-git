@@ -90,13 +90,29 @@ public class SpellWheel : MonoBehaviour
 
     void SelectSpell(SpellData spell, GameObject spellIcon)
     {
+        // If the spell is already selected, deselect it
         if (selectedSpells.Contains(spell))
         {
             selectedSpells.Remove(spell);
             spellIcon.GetComponent<Image>().color = Color.white;
         }
-        else if (selectedSpells.Count < 4)
+        else
         {
+            // If a spell is already equipped, unequip it first
+            if (selectedSpells.Count > 0)
+            {
+                // Deselect the previously selected spell
+                GameObject previousSpellIcon = spellIcons.Find(icon => icon.name == selectedSpells[0].spellName);
+                if (previousSpellIcon != null)
+                {
+                    previousSpellIcon.GetComponent<Image>().color = Color.white;
+                }
+
+                // Remove the previously selected spell
+                selectedSpells.Clear();
+            }
+
+            // Equip the new spell
             selectedSpells.Add(spell);
             spellIcon.GetComponent<Image>().color = Color.green;
         }
@@ -107,6 +123,7 @@ public class SpellWheel : MonoBehaviour
             fpsShooter.SetSelectedSpells(selectedSpells);
         }
     }
+
 
 
     void ConfirmSelection()
