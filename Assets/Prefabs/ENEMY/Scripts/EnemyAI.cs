@@ -27,6 +27,10 @@ public class EnemyAI : MonoBehaviour
     [SerializeField] private EnemyHealthbar _healthBar;
     [SerializeField] private EnemyHealthbar _healthBarEffect;
 
+    // Freeze effect variables
+    private bool isFrozen = false;
+    private float freezeDuration = 3f;
+    private float freezeTimer = 0f;
 
     void Start()
     {
@@ -44,6 +48,17 @@ public class EnemyAI : MonoBehaviour
 
     void Update()
     {
+        // If the enemy is frozen, we update the freeze timer
+        if (isFrozen)
+        {
+            freezeTimer += Time.deltaTime;
+            if (freezeTimer >= freezeDuration)
+            {
+                Unfreeze();
+            }
+            return; // Skip the regular AI logic if frozen
+        }
+
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
 
         switch (currentState)
@@ -151,5 +166,21 @@ public class EnemyAI : MonoBehaviour
     {
         // Play death animation or effects here
         Destroy(gameObject); // Destroy enemy
+    }
+
+    // Freeze the enemy (e.g., when hit by an ice projectile)
+    public void Freeze(float duration)
+    {
+        isFrozen = true;
+        freezeDuration = duration;
+        freezeTimer = 0f;
+        agent.isStopped = true; // Stop the enemy from moving
+    }
+
+    // Unfreeze the enemy after the duration ends
+    void Unfreeze()
+    {
+        isFrozen = false;
+        agent.isStopped = false; // Resume movement
     }
 }

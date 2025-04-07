@@ -22,7 +22,7 @@ public class Projectile : MonoBehaviour
         Destroy(gameObject);
     }
 
-    private void HandleCollision(Collision co)
+    protected virtual void HandleCollision(Collision co)
     {
         if (co.gameObject.CompareTag("Enemy") && isPlayerProjectile)
         {
