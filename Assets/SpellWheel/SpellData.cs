@@ -7,4 +7,5 @@ public class SpellData : ScriptableObject
     public Sprite spellIcon;
     public GameObject projectilePrefab;
     public Color backgroundColor;
+    public AudioClip hitSound;
 }

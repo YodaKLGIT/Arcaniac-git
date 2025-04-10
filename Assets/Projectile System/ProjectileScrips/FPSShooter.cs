@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,8 +10,8 @@ public class FPSShooter : MonoBehaviour
     private Vector3 destination;
     private bool leftHand;
     private float timeToFire;
-    public float fireRate = 4;
-    public float arcRange = 1;
+    public float fireRate = 4f;
+    public float arcRange = 1f;
     public float projectileSpeed = 30f;
 
     private List<SpellData> selectedSpells = new List<SpellData>();
@@ -27,39 +26,35 @@ public class FPSShooter : MonoBehaviour
     {
         selectedSpells = new List<SpellData>(spells);
         currentSpellIndex = 0;
-        Debug.Log("FPSShooter received spells: " + string.Join(", ", selectedSpells.ConvertAll(s => s.spellName)));
+        //Debug.Log("FPSShooter received spells: " + string.Join(", ", selectedSpells.ConvertAll(s => s.spellName)));
     }
 
     void Update()
     {
-        if (selectedSpells.Count == 0) return; // Prevent shooting when no spells are selected
+        if (selectedSpells.Count == 0) return;
 
-        if (Input.GetButton("Fire1") && Time.time >= timeToFire) // Allow holding Fire1
+        if (Input.GetButton("Fire1") && Time.time >= timeToFire)
         {
-            timeToFire = Time.time + 1 / fireRate;
+            timeToFire = Time.time + 1f / fireRate;
             ShootProjectile();
         }
     }
-
 
     void ShootProjectile()
     {
         if (selectedSpells.Count == 0) return;
 
-        // Determine the spell to use
         SpellData currentSpell = selectedSpells[currentSpellIndex];
 
         Ray ray = cam.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0));
         RaycastHit hit;
-        destination = Physics.Raycast(ray, out hit) ? hit.point : ray.GetPoint(1000);
+        destination = Physics.Raycast(ray, out hit) ? hit.point : ray.GetPoint(1000f);
 
-        // Fire from alternating hands
         Transform firePoint = leftHand ? LHFirePoint : RHFirePoint;
         leftHand = !leftHand;
 
         InstantiateProjectile(firePoint, currentSpell);
 
-        // Cycle to the next spell
         currentSpellIndex = (currentSpellIndex + 1) % selectedSpells.Count;
     }
 
@@ -74,8 +69,19 @@ public class FPSShooter : MonoBehaviour
             rb.velocity = direction * projectileSpeed;
         }
 
-        // Add arc effect for randomness
-        iTween.PunchPosition(projectileObj, new Vector3(Random.Range(-arcRange, arcRange), Random.Range(-arcRange, arcRange), 0), Random.Range(0.5f, 2));
+        // Assign spell data to the projectile
+        Projectile proj = projectileObj.GetComponent<Projectile>();
+        if (proj != null)
+        {
+            proj.spellData = spell;
+        }
+
+        // Optional arc movement
+        iTween.PunchPosition(projectileObj, new Vector3(
+            Random.Range(-arcRange, arcRange),
+            Random.Range(-arcRange, arcRange),
+            0), Random.Range(0.5f, 2f));
+
         Destroy(projectileObj, 5f);
     }
 }

@@ -17,3 +17,4 @@ MonoBehaviour:
   projectilePrefab: {fileID: 8871720406407977269, guid: 4caddbb403b79d64db9a43ba8b81e2f9,
     type: 3}
   backgroundColor: {r: 0, g: 0.7543683, b: 1, a: 1}
+  hitSound: {fileID: 8300000, guid: dcb31e25851cd1d41b64f8ed2417714c, type: 3}

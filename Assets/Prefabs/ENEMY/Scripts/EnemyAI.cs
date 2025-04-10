@@ -168,19 +168,25 @@ public class EnemyAI : MonoBehaviour
         Destroy(gameObject); // Destroy enemy
     }
 
-    // Freeze the enemy (e.g., when hit by an ice projectile)
     public void Freeze(float duration)
     {
         isFrozen = true;
         freezeDuration = duration;
         freezeTimer = 0f;
-        agent.isStopped = true; // Stop the enemy from moving
-    }
 
-    // Unfreeze the enemy after the duration ends
+        if (agent != null && agent.isOnNavMesh && agent.enabled)
+        {
+            agent.isStopped = true;
+        }
+    }
     void Unfreeze()
     {
         isFrozen = false;
-        agent.isStopped = false; // Resume movement
+
+        if (agent != null && agent.isOnNavMesh && agent.enabled)
+        {
+            agent.isStopped = false;
+        }
     }
+
 }

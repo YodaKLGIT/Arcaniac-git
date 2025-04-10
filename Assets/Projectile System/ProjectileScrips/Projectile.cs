@@ -9,6 +9,7 @@ public class Projectile : MonoBehaviour
     private bool collided;
     public float damage = 20f;
     public bool isPlayerProjectile;
+    public SpellData spellData;
 
     void OnCollisionEnter(Collision co)
     {
@@ -16,7 +17,6 @@ public class Projectile : MonoBehaviour
         collided = true;
 
         HandleCollision(co);
-
         CreateImpactEffect(co.contacts[0]);
 
         Destroy(gameObject);
@@ -60,9 +60,12 @@ public class Projectile : MonoBehaviour
         Quaternion impactRotation = Quaternion.LookRotation(contact.normal);
         var impact = Instantiate(impactVFX, impactPosition, impactRotation);
 
-        if (impactSound != null)
+        // Use spell-specific sound if provided, fallback to default
+        AudioClip chosenSound = (spellData != null && spellData.hitSound != null) ? spellData.hitSound : impactSound;
+
+        if (chosenSound != null)
         {
-            AudioSource.PlayClipAtPoint(impactSound, impactPosition);
+            AudioSource.PlayClipAtPoint(chosenSound, impactPosition);
         }
 
         ParticleSystem ps = impact.GetComponent<ParticleSystem>();
