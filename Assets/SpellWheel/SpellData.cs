@@ -8,4 +8,8 @@ public class SpellData : ScriptableObject
     public GameObject projectilePrefab;
     public Color backgroundColor;
     public AudioClip hitSound;
+
+    //status effects
+    public BaseStatusEffect statusEffect;
+    public float statusBuildupAmount = 25f;
 }

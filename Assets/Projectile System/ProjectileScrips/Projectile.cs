@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Projectile : MonoBehaviour
@@ -18,7 +16,6 @@ public class Projectile : MonoBehaviour
 
         HandleCollision(co);
         CreateImpactEffect(co.contacts[0]);
-
         Destroy(gameObject);
     }
 
@@ -26,10 +23,13 @@ public class Projectile : MonoBehaviour
     {
         if (co.gameObject.CompareTag("Enemy") && isPlayerProjectile)
         {
+            // Apply damage and status effect for player projectiles
             ApplyDamage<EnemyAI>(co.gameObject);
+            TryApplyStatusEffect(co.gameObject); // Call this method to apply the status effect
         }
         else if (co.gameObject.CompareTag("Player") && !isPlayerProjectile)
         {
+            // Apply damage for enemy projectiles hitting the player
             ApplyDamage<PlayerStats>(co.gameObject);
         }
         else if (co.gameObject.CompareTag("Projectile"))
@@ -44,13 +44,21 @@ public class Projectile : MonoBehaviour
         if (component != null)
         {
             if (component is EnemyAI enemy)
-            {
                 enemy.TakeDamage(damage);
-            }
             else if (component is PlayerStats player)
-            {
                 player.TakeDamage(damage);
-            }
+        }
+    }
+
+    protected virtual void TryApplyStatusEffect(GameObject target)
+    {
+        if (spellData == null || spellData.statusEffect == null) return;
+
+        // The base projectile does not handle fire or ice status effects anymore
+        EnemyStatusHandler handler = target.GetComponent<EnemyStatusHandler>();
+        if (handler != null)
+        {
+            handler.AddBuildup(spellData.statusEffect, spellData.statusBuildupAmount);
         }
     }
 
@@ -60,40 +68,28 @@ public class Projectile : MonoBehaviour
         Quaternion impactRotation = Quaternion.LookRotation(contact.normal);
         var impact = Instantiate(impactVFX, impactPosition, impactRotation);
 
-        // Use spell-specific sound if provided, fallback to default
         AudioClip chosenSound = (spellData != null && spellData.hitSound != null) ? spellData.hitSound : impactSound;
-
         if (chosenSound != null)
         {
             AudioSource.PlayClipAtPoint(chosenSound, impactPosition);
         }
 
         ParticleSystem ps = impact.GetComponent<ParticleSystem>();
-        if (ps != null)
-        {
-            Destroy(impact.gameObject, ps.main.duration + ps.main.startLifetime.constantMax);
-        }
-        else
-        {
-            Destroy(impact.gameObject, 1f);
-        }
+        Destroy(impact.gameObject, ps ? ps.main.duration + ps.main.startLifetime.constantMax : 1f);
     }
 
     private void HandleParry(GameObject otherProjectileObj)
     {
-        Projectile otherProjectile = otherProjectileObj.GetComponent<Projectile>();
-        if (otherProjectile != null && isPlayerProjectile != otherProjectile.isPlayerProjectile)
+        Projectile other = otherProjectileObj.GetComponent<Projectile>();
+        if (other != null && isPlayerProjectile != other.isPlayerProjectile)
         {
             if (isPlayerProjectile)
             {
                 PlayerStats player = FindObjectOfType<PlayerStats>();
-                if (player != null)
-                {
-                    player.Parry(); // Let PlayerStats handle slow motion
-                }
+                if (player != null) player.Parry();
             }
 
-            Destroy(otherProjectile.gameObject);
+            Destroy(otherProjectileObj);
             Destroy(gameObject);
         }
     }

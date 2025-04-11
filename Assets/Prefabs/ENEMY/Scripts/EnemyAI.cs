@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
+[RequireComponent(typeof(NavMeshAgent))]
 public class EnemyAI : MonoBehaviour
 {
     public enum EnemyState { Patrolling, Chasing, Attacking }
@@ -21,34 +22,33 @@ public class EnemyAI : MonoBehaviour
 
     private NavMeshAgent agent;
 
-    // Health System
     public float maxHealth = 100f;
-    private float currentHealth;
+
+    public float currentHealth;
     [SerializeField] private EnemyHealthbar _healthBar;
     [SerializeField] private EnemyHealthbar _healthBarEffect;
 
-    // Freeze effect variables
     private bool isFrozen = false;
-    private float freezeDuration = 3f;
     private float freezeTimer = 0f;
+    private float freezeDuration = 0f;
+
+    private bool isDead = false;
 
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
         currentState = EnemyState.Patrolling;
 
-        // Initialize health
         currentHealth = maxHealth;
         _healthBar.UpdateHealthBar(maxHealth, currentHealth);
-
-        // Start at a random patrol point
         currentPatrolIndex = Random.Range(0, patrolPoints.Length);
         MoveToNextPatrolPoint();
     }
 
     void Update()
     {
-        // If the enemy is frozen, we update the freeze timer
+        if (isDead) return;
+
         if (isFrozen)
         {
             freezeTimer += Time.deltaTime;
@@ -56,7 +56,7 @@ public class EnemyAI : MonoBehaviour
             {
                 Unfreeze();
             }
-            return; // Skip the regular AI logic if frozen
+            return;
         }
 
         float distanceToPlayer = Vector3.Distance(transform.position, player.position);
@@ -103,11 +103,7 @@ public class EnemyAI : MonoBehaviour
     void Chase()
     {
         agent.SetDestination(player.position);
-
-        // Rotate toward player
-        Vector3 direction = (player.position - transform.position).normalized;
-        Quaternion lookRotation = Quaternion.LookRotation(direction);
-        transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 10f);
+        FaceTarget(player.position);
 
         if (Vector3.Distance(transform.position, player.position) <= attackRange && Time.time >= nextFireTime)
         {
@@ -119,12 +115,7 @@ public class EnemyAI : MonoBehaviour
     void Attack()
     {
         agent.ResetPath();
-
-        // Look at player
-        Vector3 targetPosition = player.position;
-        targetPosition.y = transform.position.y;
-        Quaternion targetRotation = Quaternion.LookRotation(targetPosition - transform.position);
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+        FaceTarget(player.position);
 
         if (Time.time >= nextFireTime)
         {
@@ -133,14 +124,28 @@ public class EnemyAI : MonoBehaviour
         }
     }
 
+    void FaceTarget(Vector3 target)
+    {
+        Vector3 direction = (target - transform.position).normalized;
+        direction.y = 0;
+        if (direction != Vector3.zero)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 10f);
+        }
+    }
+
     void Shoot()
     {
         GameObject projectile = Instantiate(projectilePrefab, firePoint.position, firePoint.rotation);
         Rigidbody rb = projectile.GetComponent<Rigidbody>();
 
-        // Ignore self-collision
+        // Ignore collision with self
         Collider enemyCollider = GetComponentInChildren<Collider>();
-        Physics.IgnoreCollision(projectile.GetComponent<Collider>(), enemyCollider);
+        if (projectile.TryGetComponent(out Collider projCollider))
+        {
+            Physics.IgnoreCollision(projCollider, enemyCollider);
+        }
 
         if (rb != null)
         {
@@ -152,6 +157,8 @@ public class EnemyAI : MonoBehaviour
 
     public void TakeDamage(float damage)
     {
+        if (isDead) return;
+
         currentHealth -= damage;
         _healthBar.UpdateHealthBar(maxHealth, currentHealth);
         _healthBarEffect.UpdateHealthBar(maxHealth, currentHealth);
@@ -164,29 +171,32 @@ public class EnemyAI : MonoBehaviour
 
     void Die()
     {
-        // Play death animation or effects here
-        Destroy(gameObject); // Destroy enemy
+        isDead = true;
+        agent.isStopped = true;
+        // Optional: Play animation or effects
+        Destroy(gameObject);
     }
 
     public void Freeze(float duration)
     {
+        if (isFrozen || isDead) return;
+
         isFrozen = true;
         freezeDuration = duration;
         freezeTimer = 0f;
 
-        if (agent != null && agent.isOnNavMesh && agent.enabled)
+        if (agent.isOnNavMesh && agent.enabled)
         {
             agent.isStopped = true;
         }
     }
-    void Unfreeze()
+
+    public void Unfreeze()
     {
         isFrozen = false;
-
-        if (agent != null && agent.isOnNavMesh && agent.enabled)
+        if (agent.isOnNavMesh && agent.enabled)
         {
             agent.isStopped = false;
         }
     }
-
 }

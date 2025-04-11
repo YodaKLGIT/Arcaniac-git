@@ -5087,10 +5087,10 @@ MonoBehaviour:
   impactVFX: {fileID: 5463137335809000086, guid: 830e26a27d4ed154cbf4fbac3f607859,
     type: 3}
   impactSound: {fileID: 8300000, guid: 531ab1efb21ba06439334cde5318bb10, type: 3}
-  damage: 20
+  damage: 5
   isPlayerProjectile: 1
   spellData: {fileID: 0}
-  freezeDuration: 3
+  freezeDuration: 10
 --- !u!1 &9215832637058069030
 GameObject:
   m_ObjectHideFlags: 0

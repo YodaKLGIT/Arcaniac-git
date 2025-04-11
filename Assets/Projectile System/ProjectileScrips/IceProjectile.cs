@@ -2,21 +2,19 @@ using UnityEngine;
 
 public class IceProjectile : Projectile
 {
-    public float freezeDuration = 3f; // Duration of freeze effect
+    public float freezeDuration = 7f; // Example, you can modify this per your needs.
 
-    // Override the HandleCollision method to include the freezing effect
-    protected override void HandleCollision(Collision co)
+    protected override void TryApplyStatusEffect(GameObject target)
     {
-        base.HandleCollision(co); // Keep the base damage logic
+        if (spellData == null || spellData.statusEffect == null) return;
 
-        // Check if the projectile hit an enemy
-        if (co.gameObject.CompareTag("Enemy") && isPlayerProjectile)
+        if (spellData.statusEffect is FreezeEffect freezeEffect)
         {
-            EnemyAI enemy = co.gameObject.GetComponent<EnemyAI>();
-            if (enemy != null)
+            // Only apply ice buildup for ice projectiles
+            EnemyStatusHandler handler = target.GetComponent<EnemyStatusHandler>();
+            if (handler != null)
             {
-                // Apply freeze effect to the enemy
-                enemy.Freeze(freezeDuration);
+                handler.AddBuildup(spellData.statusEffect, spellData.statusBuildupAmount); // Ice effect logic
             }
         }
     }
